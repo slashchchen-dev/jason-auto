@@ -2,38 +2,37 @@ name: ClickUp to Google Sheet Auto Sync
 
 on:
   schedule:
-    # 台灣時間 09:00, 12:00, 18:00
-    # 對應 UTC 時間 01:00, 04:00, 10:00
-    - cron: '0 1,4,10 * * *'
-  workflow_dispatch: # 允許在 GitHub 網頁上手動觸發執行
+    # 💡 已修正為台灣時間 09:30, 12:30, 18:30
+    # 對應 UTC 時間 01:30, 04:30, 10:30
+    - cron: '30 1,4,10 * * *'
+  workflow_dispatch:
 
 jobs:
   sync_job:
     runs-on: ubuntu-latest
+    
+    # 強制設定虛擬機時區為台灣時間
+    env:
+      TZ: 'Asia/Taipei'
 
     steps:
-    # 1. 複製專案代碼到雲端虛擬機
     - name: Checkout Repository
       uses: actions/checkout@v4
 
-    # 2. 安裝 Python 環境
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.11'
 
-    # 3. 安裝 Python 套件依賴
     - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    # 4. 從 GitHub Secrets 安全還原 Google 憑證檔案
     - name: Create Credentials JSON
       run: |
         echo '${{ secrets.GOOGLE_CREDENTIALS_JSON }}' > credentials.json
 
-    # 5. 執行同步腳本並注入環境變數 (注意檔名有雙引號保護空格)
     - name: Run Script
       env:
         CLICKUP_API_KEY: ${{ secrets.CLICKUP_API_KEY }}
